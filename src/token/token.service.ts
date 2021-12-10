@@ -20,7 +20,7 @@ export class TokenService {
       const isTokenExists = await this.prismaService.tokens.findMany({
         where: { token: currentToken },
       });
-      if (isTokenExists.length > 1) {
+      if (isTokenExists.length > 0) {
         return isTokenExists[0];
       } else {
         return this.prismaService.tokens.create({
