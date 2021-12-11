@@ -14,15 +14,15 @@ datasource db {
 model User {
       user_id     Int      @id @default(autoincrement())
       email       String   @unique
-      firstName    String?
+      firstName    String
       lastName    String?
       phoneNumber String?  @unique
       username    String   @unique
       password    String
       status      String?
       user_role   String
-      createdAt   DateTime
-      updatedAt   DateTime
+      createdAt   DateTime?
+      updatedAt   DateTime?
 }
 
 model Tokens {
