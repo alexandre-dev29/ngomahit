@@ -2,8 +2,9 @@ import { Module } from '@nestjs/common';
 import { TokenResolver } from './token.resolver';
 import { TokenService } from './token.service';
 import { PrismaService } from '../prisma.service';
-import { JwtModule, JwtService } from '@nestjs/jwt';
+import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { MutationResponse } from '../GraphQl/ResponseTypes';
 
 @Module({
   imports: [
@@ -15,6 +16,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
     }),
   ],
-  providers: [TokenResolver, TokenService, PrismaService],
+  providers: [TokenResolver, TokenService, PrismaService, MutationResponse],
 })
 export class TokenModule {}

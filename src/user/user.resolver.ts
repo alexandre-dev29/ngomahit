@@ -3,7 +3,7 @@ import { User } from './user.entity';
 import { UserService } from './user.service';
 import { GraphQLError } from 'graphql';
 import { CreateUserInput } from './dto/user.dto';
-import { LoginResponse } from '../GraphQl/ResponseTypes';
+import { LoginResponse, MutationResponse } from '../GraphQl/ResponseTypes';
 
 @Resolver(() => User)
 export class UserResolver {
@@ -30,6 +30,15 @@ export class UserResolver {
   async createUser(@Args('createUserInput') createUserInput: CreateUserInput) {
     try {
       return await this.userService.createUser(createUserInput);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  @Mutation(() => MutationResponse)
+  async refreshToken(@Args('refreshToken') refreshToken: string) {
+    try {
+      return await this.userService.refreshToken(refreshToken);
     } catch (err) {
       console.log(err);
     }

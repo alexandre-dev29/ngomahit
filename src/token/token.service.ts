@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma.service';
 import { Token } from './token.entity';
+import { MutationResponse } from '../GraphQl/ResponseTypes';
 
 @Injectable()
 export class TokenService {
@@ -15,7 +16,10 @@ export class TokenService {
     return this.prismaService.tokens.findMany();
   }
 
-  async createRefreshToken(currentToken: string): Promise<Token | any> {
+  async createRefreshToken(
+    currentToken: string,
+    user_id: number,
+  ): Promise<Token | any> {
     try {
       const isTokenExists = await this.prismaService.tokens.findMany({
         where: { token: currentToken },
@@ -24,7 +28,7 @@ export class TokenService {
         return isTokenExists[0];
       } else {
         return this.prismaService.tokens.create({
-          data: { token: currentToken },
+          data: { token: currentToken, user_id: user_id },
         });
       }
     } catch (e) {
@@ -42,6 +46,30 @@ export class TokenService {
       });
     } catch (e) {
       return false;
+    }
+  }
+  async deleteRefreshTokenByUserId(
+    user_id: number,
+  ): Promise<MutationResponse | any> {
+    try {
+      const result = this.prismaService.tokens.deleteMany({
+        where: { user_id: user_id },
+      });
+      if (result)
+        return {
+          responseType: 'Success',
+          message: 'All Tokens has been successfully deleted',
+        } as MutationResponse;
+      else
+        return {
+          responseType: 'Error',
+          message: 'There was an error when trying to delete tokens',
+        } as MutationResponse;
+    } catch (e) {
+      return {
+        responseType: 'Error',
+        message: 'There was an error when trying to delete tokens',
+      } as MutationResponse;
     }
   }
 }

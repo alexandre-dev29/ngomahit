@@ -7,4 +7,7 @@ export class Token {
 
   @Field(() => String)
   token: string;
+
+  @Field(() => Int)
+  user_id: number;
 }

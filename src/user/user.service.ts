@@ -7,7 +7,8 @@ import * as bcrypt from 'bcrypt';
 import { UserRoles, UserStatus } from './dto/UserEnums';
 import { JwtService } from '@nestjs/jwt';
 import { TokenService } from '../token/token.service';
-import { LoginResponse } from '../GraphQl/ResponseTypes';
+import { LoginResponse, MutationResponse } from '../GraphQl/ResponseTypes';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class UserService {
@@ -15,6 +16,7 @@ export class UserService {
     private prismaService: PrismaService,
     private jwtService: JwtService,
     private tokenService: TokenService,
+    private configService: ConfigService,
   ) {}
 
   async findAllUser(): Promise<User[]> {
@@ -66,7 +68,9 @@ export class UserService {
             user_id: user.user_id,
             email: user.email,
           },
-          { expiresIn: '15m' },
+          {
+            expiresIn: '15m',
+          },
         );
         const refreshToken = await this.jwtService.signAsync(
           {
@@ -74,9 +78,11 @@ export class UserService {
             user_id: user.user_id,
             email: user.email,
           },
-          { expiresIn: '7d' },
+          {
+            expiresIn: '7d',
+          },
         );
-        await this.tokenService.createRefreshToken(refreshToken);
+        await this.tokenService.createRefreshToken(refreshToken, user.user_id);
         return { accessToken, refreshToken };
       } else {
         return new GraphQLError(
@@ -87,6 +93,40 @@ export class UserService {
       return new GraphQLError(
         'An Error occured when trying to create a new user',
       );
+    }
+  }
+
+  async refreshToken(refreshToken: string): Promise<MutationResponse | any> {
+    const currentToken = await this.tokenService.findOneTOkenByToken(
+      refreshToken,
+    );
+    if (currentToken) {
+      try {
+        const verifyResult = this.jwtService.verify(refreshToken);
+        const newToken = this.jwtService.sign(
+          {
+            username: verifyResult.username,
+            user_id: verifyResult.user_id,
+            email: verifyResult.email,
+          },
+          { expiresIn: '15m' },
+        );
+        return {
+          responseType: 'Success',
+          message: 'Here is the new Token',
+          data: newToken,
+        } as MutationResponse;
+      } catch (e) {
+        return {
+          responseType: 'Error',
+          message: 'Your token has expired please login again',
+        } as MutationResponse;
+      }
+    } else {
+      return {
+        responseType: 'Error',
+        message: 'Your token has expired please login again',
+      } as MutationResponse;
     }
   }
 }
